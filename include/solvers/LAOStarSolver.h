@@ -20,6 +20,7 @@ class LAOStarSolver : public Solver
 private:
     mlcore::Problem* problem_;
     mlcore::StateSet visited;
+    mlcore::StateSet all_states;
 
     /* Error tolerance */
     double epsilon_ = 1.0e-6;
@@ -59,7 +60,7 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
-	size_t get_visited_size();
+	size_t get_all_states_size();
 
 };
 

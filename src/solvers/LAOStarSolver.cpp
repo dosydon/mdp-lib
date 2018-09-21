@@ -40,11 +40,12 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
             }
         }
     }
+
 }
 
 int LAOStarSolver::expand(mlcore::State* s)
 {
-// 	std::cout << "expand" << std::endl;
+	all_states.insert(s);
     if (!visited.insert(s).second)  // state was already visited.
         return 0;
     if (s->deadEnd() || problem_->goal(s))
@@ -90,9 +91,9 @@ double LAOStarSolver::testConvergence(mlcore::State* s)
     return mdplib::dead_end_cost + 1;
 }
 
-size_t LAOStarSolver::get_visited_size()
+size_t LAOStarSolver::get_all_states_size()
 {
-	return visited.size();
+	return all_states.size();
 }
 
 }
