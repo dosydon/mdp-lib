@@ -88,5 +88,10 @@ double LAOStarSolver::testConvergence(mlcore::State* s)
     return mdplib::dead_end_cost + 1;
 }
 
+size_t LAOStarSolver::get_visited_size()
+{
+	return visited.size();
+}
+
 }
 

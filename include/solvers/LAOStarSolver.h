@@ -59,6 +59,7 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+	size_t get_visited_size();
 
 };
 
