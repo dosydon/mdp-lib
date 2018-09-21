@@ -236,6 +236,9 @@ lib/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 testsolver.out: lib/libmdp.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
 
+runLAO.out: lib/libmdp.a domains
+	$(CC) $(CFLAGS) $(INCLUDE) -o runLAO.out $(TD)/runLAO.cpp $(LIBS)
+
 testvpi.out: lib/libmdp.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testvpi.out $(TD)/testVPISolver.cpp $(LIBS) \
 		src/solvers/VISolver.cpp

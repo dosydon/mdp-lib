@@ -4,6 +4,7 @@
 #include "../../include/util/general.h"
 
 #include <ctime>
+#include <iostream>
 
 namespace mlsolvers
 {
@@ -43,6 +44,7 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
 
 int LAOStarSolver::expand(mlcore::State* s)
 {
+// 	std::cout << "expand" << std::endl;
     if (!visited.insert(s).second)  // state was already visited.
         return 0;
     if (s->deadEnd() || problem_->goal(s))
