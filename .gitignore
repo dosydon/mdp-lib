@@ -41,3 +41,4 @@ testclient
 planserv
 *.pyc
 *.gch
+tags
