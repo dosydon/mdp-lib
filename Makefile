@@ -315,3 +315,4 @@ clean:
 	rm -f $(OD)/solvers/mobj/*
 	rm -f $(ID_PPDDL)/mini-gpt/*.o
 	rm -f lib/libmdp*.a
+	rm -f runLAO.out
