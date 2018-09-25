@@ -1,4 +1,5 @@
 #include "../../include/solvers/Solver.h"
+#include "../../include/domains/racetrack/RacetrackState.h"
 #include "../../include/solvers/LAOStarSolver.h"
 
 #include "../../include/util/general.h"
@@ -45,6 +46,11 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
 
 int LAOStarSolver::expand(mlcore::State* s)
 {
+// 	std::cout << ((RacetrackState*) s)->x() << " "
+// 		<< ((RacetrackState*) s)->y() << " "
+// 		<< ((RacetrackState*) s)->vx() << " "
+// 		<< ((RacetrackState*) s)->vy() << " "
+// 		<< std::endl;
 	all_states.insert(s);
     if (!visited.insert(s).second)  // state was already visited.
         return 0;
@@ -59,7 +65,9 @@ int LAOStarSolver::expand(mlcore::State* s)
     } else {
         mlcore::Action* a = s->bestAction();
         for (mlcore::Successor sccr : problem_->transition(s, a))
+		{
             cnt += expand(sccr.su_state);
+		}
     }
     bellmanUpdate(problem_, s, weight_);
     return cnt;
@@ -99,6 +107,11 @@ size_t LAOStarSolver::get_all_states_size()
 size_t 
 LAOStarSolver::get_states_on_policy_inner(mlcore::State* s, mlcore::StateSet* duplicates)
 {
+// 	std::cout << ((RacetrackState*) s)->x() << " "
+// 		<< ((RacetrackState*) s)->y() << " "
+// 		<< ((RacetrackState*) s)->vx() << " "
+// 		<< ((RacetrackState*) s)->vy() << " "
+// 		<< std::endl;
     if (s->deadEnd() || problem_->goal(s))
         return 1;
 
@@ -106,7 +119,7 @@ LAOStarSolver::get_states_on_policy_inner(mlcore::State* s, mlcore::StateSet* du
         return 0;
 
 	duplicates->insert(s);
-	size_t my_sum = 0;
+	size_t my_sum = 1;
 	for (mlcore::Successor sccr : problem_->transition(s, s->bestAction()))
 		my_sum += get_states_on_policy_inner(sccr.su_state, duplicates);
 	return my_sum;
