@@ -96,5 +96,27 @@ size_t LAOStarSolver::get_all_states_size()
 	return all_states.size();
 }
 
+size_t 
+LAOStarSolver::get_states_on_policy_inner(mlcore::State* s, mlcore::StateSet* duplicates)
+{
+    if (s->deadEnd() || problem_->goal(s))
+        return 1;
+
+    if (!duplicates->insert(s).second)
+        return 0;
+
+	duplicates->insert(s);
+	size_t my_sum = 0;
+	for (mlcore::Successor sccr : problem_->transition(s, s->bestAction()))
+		my_sum += get_states_on_policy_inner(sccr.su_state, duplicates);
+	return my_sum;
+}
+
+size_t LAOStarSolver::get_states_on_policy(mlcore::State* s)
+{
+    mlcore::StateSet duplicates;
+	return get_states_on_policy_inner(s, &duplicates);
+}
+
 }
 

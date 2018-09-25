@@ -247,6 +247,7 @@ int main(int argc, char* args[])
 	Solver* solver = LAOStarSolverInit();
 	solver->solve(problem->initialState());
 	cout << "# states: " << ((LAOStarSolver* )solver)->get_all_states_size() << endl;
+	cout << "# states on policy: " << ((LAOStarSolver* )solver)->get_states_on_policy(problem->initialState()) << endl;
 
 	delete solver;
     delete problem;

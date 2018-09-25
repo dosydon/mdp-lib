@@ -61,6 +61,8 @@ public:
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
 	size_t get_all_states_size();
+	size_t get_states_on_policy_inner(mlcore::State* s, mlcore::StateSet* duplicates);
+	size_t get_states_on_policy(mlcore::State* s);
 
 };
 
