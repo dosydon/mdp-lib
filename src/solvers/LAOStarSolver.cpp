@@ -46,7 +46,7 @@ mlcore::Action* LAOStarSolver::solve(mlcore::State* s0)
 
 int LAOStarSolver::expand(mlcore::State* s)
 {
-// 	std::cout << ((RacetrackState*) s)->x() << " "
+// 	std::cout << "expand:" << ((RacetrackState*) s)->x() << " "
 // 		<< ((RacetrackState*) s)->y() << " "
 // 		<< ((RacetrackState*) s)->vx() << " "
 // 		<< ((RacetrackState*) s)->vy() << " "
@@ -107,16 +107,16 @@ size_t LAOStarSolver::get_all_states_size()
 size_t 
 LAOStarSolver::get_states_on_policy_inner(mlcore::State* s, mlcore::StateSet* duplicates)
 {
-// 	std::cout << ((RacetrackState*) s)->x() << " "
+// 	std::cout << "on_policy:" << ((RacetrackState*) s)->x() << " "
 // 		<< ((RacetrackState*) s)->y() << " "
 // 		<< ((RacetrackState*) s)->vx() << " "
 // 		<< ((RacetrackState*) s)->vy() << " "
 // 		<< std::endl;
-    if (s->deadEnd() || problem_->goal(s))
-        return 1;
-
     if (!duplicates->insert(s).second)
         return 0;
+
+    if (s->deadEnd() || problem_->goal(s))
+        return 1;
 
 	duplicates->insert(s);
 	size_t my_sum = 1;
