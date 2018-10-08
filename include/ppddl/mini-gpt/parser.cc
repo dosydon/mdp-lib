@@ -3683,21 +3683,21 @@ yyerror( const char *s )
 static void
 yyerror( const std::string &s )
 {
-  std::cout << "<parser>:" << current_file << ':' << line_number << ": " << s
-	    << std::endl;
-  success = false;
+//   std::cout << "<parser>:" << current_file << ':' << line_number << ": " << s
+// 	    << std::endl;
+//   success = false;
 }
 
 static void
 yywarning( const std::string &s )
 {
-  if( gpt::warning_level > 0 )
-    {
-      std::cout << "<parser>:" << current_file << ':' << line_number << ": " << s
-		<< std::endl;
-      if( gpt::warning_level > 1 )
-	success = false;
-    }
+//   if( gpt::warning_level > 0 )
+//     {
+//       std::cout << "<parser>:" << current_file << ':' << line_number << ": " << s
+// 		<< std::endl;
+//       if( gpt::warning_level > 1 )
+// 	success = false;
+//     }
 }
 
 static void
