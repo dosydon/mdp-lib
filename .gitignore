@@ -41,3 +41,6 @@ testclient
 planserv
 *.pyc
 *.gch
+
+#ignore ctags
+tags
