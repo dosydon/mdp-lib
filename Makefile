@@ -297,6 +297,9 @@ lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCE
 #      $(ID_PPDDL)/mini-gpt/heuristics.cc \
 #      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
 
+unit_test: unit_test.cpp $(ALL_CPP) $(ALL_H) libmdp
+	$(CC) -DTEST $(CFLAGS) $(INCLUDE) unit_test.cpp $(LIBS) -o unit_test
+
 .PHONY: clean
 clean:
 	rm -f $(TD)/*.o
