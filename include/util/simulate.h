@@ -22,5 +22,6 @@ vector<double> simulate(Solver* solver,
                         int maxTime,
                         bool perReplan,
 						int verbosity,
-						bool useUpperBound);
+						bool useUpperBound,
+						bool noInitialPlan);
 #endif // MDPLIB_SIMULATE_H

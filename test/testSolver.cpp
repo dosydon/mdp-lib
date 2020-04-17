@@ -134,8 +134,7 @@ void setupSailingDomain()
         cout << "Setting up sailing domain with size " << sizeSailing <<
             " with goal " << goalSailing << endl;
 
-    problem =
-        new SailingProblem(0, 0, 0,
+    problem = new SailingProblem(0, 0, 0,
                            goalSailing, goalSailing,
                            sizeSailing, sizeSailing,
                            costs,
@@ -215,6 +214,8 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "lao") {
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
+		std::cout << trials << std::endl;
+		std::cout << tol << std::endl;
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
         // BRTDP is just VPI-RTDP with beta = 0
@@ -397,6 +398,7 @@ int main(int argc, char* args[])
 
     if (verbosity > 100)
         cout << problem->states().size() << " states" << endl;
+	cout << problem->states().size() << " states" << endl;
 
     int numSims = 100;
     if (flag_is_registered_with_value("n"))
@@ -428,8 +430,9 @@ int main(int argc, char* args[])
             double avgCost = 0.0, avgTime = 0.0;
             double M2Cost = 0.0, M2Time = 0.0;
             for (int i = 1; i <= numReps; i++) {
+
                 std::vector<double> results =
-                    simulate(solver, alg_item, problem, numSims, t, perReplan, verbosity, useUpperBound);
+                    simulate(solver, alg_item, problem, numSims, t, perReplan, verbosity, useUpperBound, flag_is_registered("no-initial-plan"));
                 totalcost += results[0];
                 updateStatistics(results[0], i, avgCost, M2Cost);
                 updateStatistics(results[2], i, avgTime, M2Time);

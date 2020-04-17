@@ -119,3 +119,48 @@ mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
 
 }
 
+#ifdef TEST
+#include "catch.hpp"
+#include "Problem.h"
+#include "util/simulate.h"
+#include "domains/racetrack/RacetrackProblem.h"
+#include "domains/racetrack/RTrackDetHeuristic.h"
+
+#include <limits>
+#include <math.h>
+
+using namespace mlsolvers;
+using namespace std;
+using namespace mlcore;
+
+TEST_CASE("run LRTDP on race track", "[LRTDP]")
+{
+    string trackName = "data/tracks/known/square-4-error.track";
+    int mds = -1;
+    double perror = 0.10;
+    double pslip = 0.20;
+    double tol = 1.0e-3;
+	int trials = 1000000;
+    int numSims = 100;
+
+	Heuristic* heuristic = new RTrackDetHeuristic(trackName.c_str());
+
+    Problem* problem = new RacetrackProblem(trackName.c_str());
+    ((RacetrackProblem*) problem)->pError(perror);
+    ((RacetrackProblem*) problem)->pSlip(pslip);
+    ((RacetrackProblem*) problem)->mds(mds);
+	problem->generateAll();
+    problem->setHeuristic(heuristic);
+
+	Solver* solver = new LRTDPSolver(problem, trials, tol);
+
+	REQUIRE(400270 == problem->states().size());
+	std::vector<double> results =
+		simulate(solver, "lrtdp", problem, numSims, -1, false, 0, false, false);
+	double err = 1e-1;
+	REQUIRE(results[0] + err >=  11.66);
+	REQUIRE(results[0] - err <=  11.66);
+	delete problem;
+	delete solver;
+}
+#endif

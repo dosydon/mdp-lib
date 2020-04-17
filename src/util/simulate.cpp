@@ -23,7 +23,7 @@ bool mustReplan(Solver* solver, string algorithm, State* s, int plausTrial) {
       return !s->checkBits(mdplib::SOLVED_FLARES);
     }
     if (algorithm == "lrtdp") {
-    return !s->checkBits(mdplib::SOLVED);
+		return !s->checkBits(mdplib::SOLVED);
     }
     if (algorithm == "soft-flares") {
       if (s->checkBits(mdplib::SOLVED))
@@ -69,7 +69,8 @@ vector<double> simulate(Solver* solver,
                         int maxTime = -1,
                         bool perReplan = false,
 						int verbosity = 0,
-						bool useUpperBound = false)
+						bool useUpperBound = false,
+						bool noInitialPlan = false)
 {
     double expectedCost = 0.0;
     double variance = 0.0;
@@ -83,7 +84,10 @@ vector<double> simulate(Solver* solver,
         if (verbosity >= 100)
             cout << " ********* Simulation Starts ********* " << endl;
         clock_t startTime, endTime;
-        if (i == 0 && !flag_is_registered("no-initial-plan")) {
+        if (i == 0 && !noInitialPlan) {
+			if (verbosity >= 10) {
+				cout << "Start Planing" << i << endl;
+			}
             for (State* s : problem->states())
                 s->reset();
             if (maxTime > 0) {
@@ -115,6 +119,7 @@ vector<double> simulate(Solver* solver,
             statesSeen.insert(tmp);
             Action* a;
             if (mustReplan(solver, algorithm, tmp, plausTrial)) {
+// 				std::cout << "must replan" << std::endl;
                 startTime = clock();
                 int simulationsElapsedTime =
                     std::ceil(1000 * (double(startTime - simulationsStartTime)

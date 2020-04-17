@@ -6,6 +6,7 @@
 # Compilation flags and variables
 CC = g++
 CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
+TEST_FLAGS = -std=c++11 -O0 -DTEST -DATOM_STATES -DNDEBUG -pthread
 # CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
@@ -55,12 +56,12 @@ INCLUDE = $(INCLUDE_DOM) $(INCLUDE_CORE) $(INCLUDE_SOLVERS)
 
 # Variables for source/header files
 I_H = $(ID)/*.h
-S_CPP = $(SD)/*.cpp
-SOLV_CPP = $(SD_SOLV)/*.cpp
+S_CPP = $(wildcard $(SD)/*.cpp)
+SOLV_CPP = $(wildcard $(SD_SOLV)/*.cpp)
 SOLV_H = $(ID_SOLV)/*.h
-MOSOLV_CPP = $(SD_SOLV_MOBJ)/*.cpp
+MOSOLV_CPP = $(wildcard $(SD_SOLV_MOBJ)/*.cpp)
 MOSOLV_H = $(ID_SOLV_MOBJ)/*.h
-UTIL_CPP = $(SD_UTIL)/*.cpp
+UTIL_CPP = $(wildcard $(SD_UTIL)/*.cpp)
 UTIL_H = $(ID_UTIL)/*.h
 
 GW_CPP = $(SD_GW)/*.cpp
@@ -85,6 +86,13 @@ ALL_CPP = $(DOM_CPP) $(SOLV_CPP) $(MOSOLV_CPP) $(UTIL_CPP)
 LIBS = lib/libmdp.a lib/libmdp_domains.a -Llib
 LIBS_GUROBI = $(LIBS) -lgurobi60 -Llib
 
+CPPS = $(S_CPP) $(SOLV_CPP) $(UTIL_CPP)
+SOLVER_TEST_OBJS = $(SOLV_CPP:$(SD)/solvers/%.cpp=$(OD)/%.oo)
+FILTER = $(OD)/FFReducedModelSolver.oo $(OD)/SSiPPFFSolver.oo $(OD)/RFFSolver.oo $(OD)/FFReplanSolver.oo
+SOLVER_TEST_OBJS_FILTERED = $(filter-out $(FILTER),$(SOLVER_TEST_OBJS))
+UTIL_TEST_OBJS = $(UTIL_CPP:$(SD)/util/%.cpp=$(OD)/%.oo)
+CORE_TEST_OBJS = $(S_CPP:$(SD)/%.cpp=$(OD)/%.oo)
+TEST_OBJS = $(SOLVER_TEST_OBJS_FILTERED) $(UTIL_TEST_OBJS) $(CORE_TEST_OBJS)
 #########################################################################
 #                                 TARGETS                               #
 #########################################################################
@@ -297,8 +305,17 @@ lib/libmdp_reduced.a: lib/libmdp.a domains ppddl $(SD_REDUCED)/*.cpp $(ID_REDUCE
 #      $(ID_PPDDL)/mini-gpt/heuristics.cc \
 #      $(LIBS) lib/libminigpt.a lib/libmdp_reduced.a lib/libmdp_ppddl.a
 
-unit_test: unit_test.cpp $(ALL_CPP) $(ALL_H) libmdp
-	$(CC) -DTEST $(CFLAGS) $(INCLUDE) unit_test.cpp $(LIBS) -o unit_test
+$(OD)/%oo: $(SD)/solvers/%cpp $(ALL_H) | $(OBJ_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDE) -Icatch2 -c $< -o $@
+
+$(OD)/%oo: $(SD)/util/%cpp $(ALL_H) | $(OBJ_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDE) -Icatch2 -c $< -o $@
+
+$(OD)/%oo: $(SD)/%cpp $(ALL_H) | $(OBJ_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDE) -Icatch2 -c $< -o $@
+
+unit_test: unit_test.cpp $(ALL_CPP) $(ALL_H) $(TEST_OBJS)
+	$(CC) $(TEST_FLAGS) $(INCLUDE) unit_test.cpp $(TEST_OBJS) lib/libmdp_domains.a -Llib -o unit_test
 
 .PHONY: clean
 clean:
@@ -315,3 +332,5 @@ clean:
 	rm -f $(OD)/solvers/mobj/*
 	rm -f $(ID_PPDDL)/mini-gpt/*.o
 	rm -f lib/libmdp*.a
+
+print-%  : ; @echo $* = $($*)
