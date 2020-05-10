@@ -72,6 +72,7 @@ vector<double> simulate(Solver* solver,
 						bool useUpperBound = false,
 						bool noInitialPlan = false)
 {
+	std::cout << "perReplan:" << perReplan << std::endl;
     double expectedCost = 0.0;
     double variance = 0.0;
     double totalTime = 0.0;
@@ -91,6 +92,7 @@ vector<double> simulate(Solver* solver,
             for (State* s : problem->states())
                 s->reset();
             if (maxTime > 0) {
+				std::cout << "maxTime:" << maxTime << std::endl;
                 solver->maxPlanningTime(maxTime);
             }
             startTime = clock();

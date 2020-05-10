@@ -20,13 +20,14 @@ private:
 
     mlcore::Problem* problem_;
     int maxTrials_;
+    int maxTime_;
     double epsilon_;
 
     /* Performs a single LRTDP trial */
-    void trial(mlcore::State* s);
+    void trial(mlcore::State* s, std::chrono::time_point<std::chrono::high_resolution_clock> start_time);
 
     /* Checks if the state has been solved. */
-    bool checkSolved(mlcore::State* s);
+    bool checkSolved(mlcore::State* s, std::chrono::time_point<std::chrono::high_resolution_clock> start_time);
 
                                                                                 int cnt_samples_ = 0;
                                                                                 long int total_time_samples_ = 0;
@@ -49,6 +50,11 @@ public:
      * @param s0 The state to start the search at.
      */
     virtual mlcore::Action* solve(mlcore::State* s0);
+
+    /**
+     * Sets the maximum planning time allowed to the algorithm (milliseconds).
+     */
+    virtual void maxPlanningTime(time_t theTime) { maxTime_ = theTime; }
 };
 
 }

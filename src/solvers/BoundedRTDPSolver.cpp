@@ -16,6 +16,8 @@ void BoundedRTDPSolver::trial(mlcore::State* s) {
     while (true) {
         if (problem_->goal(tmp))
             break;
+		if (visited.size() > 1000)
+			break;
         visited.push_front(tmp);
         this->bellmanUpdate(tmp);
         // Explore using the lower bound.
@@ -109,6 +111,7 @@ double BoundedRTDPSolver::bellmanUpdate(mlcore::State* s) {
 mlcore::Action* BoundedRTDPSolver::solve(mlcore::State* s0) {
     int trials = 0;
     while (trials++ < maxTrials_) {
+		std::cout << trials << std::endl;
         trial(s0);
         if (upperBounds_[s0] - s0->cost() < epsilon_)
             break;
@@ -116,3 +119,49 @@ mlcore::Action* BoundedRTDPSolver::solve(mlcore::State* s0) {
 }
 
 }
+
+#ifdef TEST
+#include "catch.hpp"
+#include "Problem.h"
+#include "util/simulate.h"
+#include "domains/racetrack/RacetrackProblem.h"
+#include "domains/racetrack/RTrackDetHeuristic.h"
+
+#include <limits>
+#include <math.h>
+
+using namespace mlsolvers;
+using namespace std;
+using namespace mlcore;
+
+TEST_CASE("run BRTDP on race track", "[BRTDP]")
+{
+    string trackName = "data/tracks/known/square-4-error.track";
+    int mds = -1;
+    double perror = 0.10;
+    double pslip = 0.20;
+    double tol = 1.0e-3;
+	int trials = 1000;
+    int numSims = 100;
+
+	Heuristic* heuristic = new RTrackDetHeuristic(trackName.c_str());
+
+    Problem* problem = new RacetrackProblem(trackName.c_str());
+    ((RacetrackProblem*) problem)->pError(perror);
+    ((RacetrackProblem*) problem)->pSlip(pslip);
+    ((RacetrackProblem*) problem)->mds(mds);
+	problem->generateAll();
+    problem->setHeuristic(heuristic);
+
+	Solver* solver = new BoundedRTDPSolver(problem, tol, trials);
+
+	REQUIRE(400270 == problem->states().size());
+	std::vector<double> results =
+		simulate(solver, "lrtdp", problem, numSims, -1, false, 0, false, false);
+	double err = 1e-1;
+	REQUIRE(results[0] + err >=  11.66);
+	REQUIRE(results[0] - err <=  11.66);
+	delete problem;
+	delete solver;
+}
+#endif

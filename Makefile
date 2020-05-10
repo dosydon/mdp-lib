@@ -1,8 +1,42 @@
 #########################################################################
 #                                VARIABLES                              #
 #########################################################################
+GIT_VERSION := $(shell git rev-parse HEAD)
+RESULT_DIR := result
+SCRIPT_DIR := python
+VENV_DIR := venv
+NSIMS := 1000
+MAXTIME := 100000
+TRACKS := known/ring-3-error.track known/ring-4-error.track known/ring-5-error.track known/square-3-error.track known/square-4-error.track roads-extreme.track winding.track
+METHODS := flare0 flare1 lrtdp
+pngs = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).png))
+jsons = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).json))
+comparisons = $(foreach track,$(TRACKS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/compare.png)
 
+define for_problem =
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1):
+	mkdir -p $$@
 
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare0.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --track=data/tracks/$(1) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=1 --per_replan > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare1.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --track=data/tracks/$(1) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=0 --per_replan > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --track=data/tracks/$(1) --n=$$(NSIMS) --algorithm=lrtdp --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --per_replan > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.json: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.log | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	$$(SCRIPT_DIR)/parse.py $$< > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.json | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/plot.py $$< $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/compare.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare0.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare1.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.json | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/compare.py $$(RESULT_DIR)/$$(GIT_VERSION)/$(1) $$@
+endef
+
+$(foreach problem,$(TRACKS),$(eval $(call for_problem,$(problem))))
 # Compilation flags and variables
 CC = g++
 CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
@@ -241,7 +275,7 @@ lib/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 	mv *.o $(OD_DOMAINS)
 	ar rvs lib/libmdp_domains.a $(OD_DOMAINS)/*.o
 
-testsolver.out: lib/libmdp.a domains
+testsolver.out: lib/libmdp.a lib/libmdp_domains.a
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
 
 testvpi.out: lib/libmdp.a domains
@@ -332,5 +366,8 @@ clean:
 	rm -f $(OD)/solvers/mobj/*
 	rm -f $(ID_PPDDL)/mini-gpt/*.o
 	rm -f lib/libmdp*.a
+
+.PHONY: run
+run: $(pngs) $(jsons) $(comparisons)
 
 print-%  : ; @echo $* = $($*)

@@ -591,11 +591,11 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
     bool hasAction = false;
     mlcore::Action* bestActionLowerBound = nullptr;
     mlcore::Action* bestActionUpperBound = nullptr;
-                                                                                std::cout << s << ":";
+//                                                                                 std::cout << s << ":";
     for (mlcore::Action* a : problem_->actions()) {
         if (!problem_->applicable(s, a))
             continue;
-                                                                                std::cout << a->hashValue();
+//                                                                                 std::cout << a->hashValue();
         hasAction = true;
         double lowerBoundAction = 0.0;
         double upperBoundAction = 0.0;
@@ -648,3 +648,49 @@ mlcore::Action* VPIRTDPSolver::solve(mlcore::State* s0) {
 }
 
 }
+
+#ifdef TEST
+#include "catch.hpp"
+#include "Problem.h"
+#include "util/simulate.h"
+#include "domains/racetrack/RacetrackProblem.h"
+#include "domains/racetrack/RTrackDetHeuristic.h"
+
+#include <limits>
+#include <math.h>
+
+using namespace mlsolvers;
+using namespace std;
+using namespace mlcore;
+
+TEST_CASE("run VPIRTDP on race track", "[VPIRTDP]")
+{
+    string trackName = "data/tracks/known/square-4-error.track";
+    int mds = -1;
+    double perror = 0.10;
+    double pslip = 0.20;
+    double tol = 1.0e-3;
+	int trials = 1000000;
+    int numSims = 100;
+
+	Heuristic* heuristic = new RTrackDetHeuristic(trackName.c_str());
+
+    Problem* problem = new RacetrackProblem(trackName.c_str());
+    ((RacetrackProblem*) problem)->pError(perror);
+    ((RacetrackProblem*) problem)->pSlip(pslip);
+    ((RacetrackProblem*) problem)->mds(mds);
+	problem->generateAll();
+    problem->setHeuristic(heuristic);
+
+	Solver* solver = new VPIRTDPSolver(problem, tol, trials, -1.0, 0.0, 100.0, mdplib::dead_end_cost+10.0, true);
+
+// 	REQUIRE(400270 == problem->states().size());
+	std::vector<double> results =
+		simulate(solver, "rrtdp", problem, numSims, -1, false, 0, false, false);
+	double err = 1e-1;
+	REQUIRE(results[0] + err >=  11.66);
+	REQUIRE(results[0] - err <=  11.66);
+	delete problem;
+	delete solver;
+}
+#endif

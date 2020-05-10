@@ -10,7 +10,7 @@ LRTDPSolver::LRTDPSolver(mlcore::Problem* problem,
 { }
 
 
-void LRTDPSolver::trial(mlcore::State* s) {
+void LRTDPSolver::trial(mlcore::State* s, std::chrono::time_point<std::chrono::high_resolution_clock> start_time) {
     mlcore::State* tmp = s;
     std::list<mlcore::State*> visited;
     while (!tmp->checkBits(mdplib::SOLVED)) {
@@ -36,7 +36,7 @@ void LRTDPSolver::trial(mlcore::State* s) {
         tmp = visited.front();
         visited.pop_front();
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
-        bool solved = checkSolved(tmp);
+        bool solved = checkSolved(tmp, start_time);
                                                                                 auto end = std::chrono::high_resolution_clock::now();
                                                                                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
                                                                                 cnt_check_++;
@@ -46,7 +46,7 @@ void LRTDPSolver::trial(mlcore::State* s) {
 }
 
 
-bool LRTDPSolver::checkSolved(mlcore::State* s)
+bool LRTDPSolver::checkSolved(mlcore::State* s, std::chrono::time_point<std::chrono::high_resolution_clock> start_time)
 {
     std::list<mlcore::State*> open, closed;
 
@@ -59,6 +59,15 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
     while (!open.empty()) {
         tmp = open.front();
         open.pop_front();
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::
+            duration_cast<std::chrono::milliseconds>(end-start_time).count();
+        if (maxTime_ > -1 && duration >= maxTime_)
+		{
+			std::cout << "duration:" << duration << std::endl;
+			return false;
+		}
 
         if (problem_->goal(tmp))
             continue;
@@ -108,8 +117,17 @@ bool LRTDPSolver::checkSolved(mlcore::State* s)
 mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
 {
     int trials = 0;
+    auto begin = std::chrono::high_resolution_clock::now();
     while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
-        trial(s0);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::
+            duration_cast<std::chrono::milliseconds>(end-begin).count();
+        if (maxTime_ > -1 && duration >= maxTime_)
+		{
+			std::cout << "duration:" << duration << std::endl;
+            break;
+		}
+        trial(s0, begin);
     }
                                                                                 dprint(cnt_samples_, double(total_time_samples_) / cnt_samples_);
                                                                                 dprint(cnt_check_, double(total_time_check_) / cnt_check_);

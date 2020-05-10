@@ -183,7 +183,10 @@ Action* FLARESSolver::solveApproximate(State* s0)
         auto duration = std::chrono::
             duration_cast<std::chrono::milliseconds>(end-begin).count();
         if (maxTime_ > -1 && duration >= maxTime_)
+		{
+			std::cout << "duration:" << duration << std::endl;
             break;
+		}
         trial(s0);
     }
     return s0->bestAction();
