@@ -6,7 +6,7 @@ import json
 
 def parse(data):
     dict = {}
-    costs = re.findall("Exec cost (\d+\.\d+)", data)
+    costs = re.findall("Exec cost (\d+\.*\d*)", data)
     dict["execution_cost"] = [float(cost) for cost in costs]
 
     maxTimes = re.findall("maxTime:(\d+)", data)

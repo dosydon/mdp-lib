@@ -5,38 +5,56 @@ GIT_VERSION := $(shell git rev-parse HEAD)
 RESULT_DIR := result
 SCRIPT_DIR := python
 VENV_DIR := venv
-NSIMS := 1000
-MAXTIME := 100000
-TRACKS := known/ring-3-error.track known/ring-4-error.track known/ring-5-error.track known/square-3-error.track known/square-4-error.track roads-extreme.track winding.track
-METHODS := flare0 flare1 lrtdp
-pngs = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).png))
-jsons = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).json))
-comparisons = $(foreach track,$(TRACKS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/compare.png)
+NSIMS := 10000
+MAX_TIME := 10000
+TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/known/square-4-error.track tracks/roads-extreme.track tracks/winding.track tracks/city.track tracks/roads.track tracks/multigoal.track
+
+CTPS := ctps/small-graphs/test00_5.graph ctps/small-graphs/test00_6.graph ctps/small-graphs/test00_10.graph
+
+METHODS := flares0 flares1 lrtdp flares0_no_heuristic flares1_no_heuristic lrtdp_no_heuristic
+
+pngs = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).png)) $(foreach ctp,$(CTPS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/$(method).png))
+
+jsons = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).json)) $(foreach ctp,$(CTPS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/$(method).json))
+comparisons = $(foreach track,$(TRACKS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/compare.png) $(foreach ctp,$(CTPS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/compare.png)
 
 define for_problem =
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1):
 	mkdir -p $$@
 
-$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare0.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	./testsolver.out --track=data/tracks/$(1) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=1 --per_replan > $$@
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --optimal=true --per_replan > $$@
 
-$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare1.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	./testsolver.out --track=data/tracks/$(1) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=0 --per_replan > $$@
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares0.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=0 --per_replan > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares0_no_heuristic.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --heuristic=zero --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=0 --per_replan > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares1.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=1 --per_replan > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares1_no_heuristic.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --heuristic=zero --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --prob=1 --per_replan > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp_no_heuristic.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --heuristic=zero --n=$$(NSIMS) --algorithm=lrtdp --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --per_replan > $$@
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	./testsolver.out --track=data/tracks/$(1) --n=$$(NSIMS) --algorithm=lrtdp --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --per_replan > $$@
+	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=lrtdp --v=1 --pslip=0.2 --perror=0.1 --max_time=$$(MAX_TIME) --min_time=10 --per_replan > $$@
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.json: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.log | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	$$(SCRIPT_DIR)/parse.py $$< > $$@
 
-$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.json | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.json $$(SCRIPT_DIR)/plot.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/plot.py $$< $$@
 
-$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/compare.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare0.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flare1.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.json | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/compare.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares0.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares1.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.json $$(SCRIPT_DIR)/compare.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/compare.py $$(RESULT_DIR)/$$(GIT_VERSION)/$(1) $$@
 endef
 
-$(foreach problem,$(TRACKS),$(eval $(call for_problem,$(problem))))
+$(foreach problem,$(TRACKS),$(eval $(call for_problem,$(problem),track,)))
+$(foreach problem,$(CTPS),$(eval $(call for_problem,$(problem),ctp,--dont-generate=true)))
 # Compilation flags and variables
 CC = g++
 CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
@@ -366,6 +384,10 @@ clean:
 	rm -f $(OD)/solvers/mobj/*
 	rm -f $(ID_PPDDL)/mini-gpt/*.o
 	rm -f lib/libmdp*.a
+
+.PHONY: flush
+flush:
+	rm -r $(RESULT_DIR)/$(GIT_VERSION)
 
 .PHONY: run
 run: $(pngs) $(jsons) $(comparisons)

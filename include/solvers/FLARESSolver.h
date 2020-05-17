@@ -44,10 +44,10 @@ private:
     mlcore::StateSet depthSolved_;
 
     /* Performs a single trial */
-    void trial(mlcore::State* s);
+    void trial(mlcore::State* s, std::chrono::time_point<std::chrono::high_resolution_clock> start_time, bool &isTimedUP);
 
     /* Checks if the state has been solved. */
-    bool checkSolved(mlcore::State* s);
+    bool checkSolved(mlcore::State* s, std::chrono::time_point<std::chrono::high_resolution_clock> start_time, bool &isTimedUp);
 
     /* Checks if the state has already been labeled as solved. */
     bool labeledSolved(mlcore::State* s);

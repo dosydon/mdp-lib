@@ -25,7 +25,7 @@ FLARESSolver::FLARESSolver(Problem* problem,
 { }
 
 
-void FLARESSolver::trial(State* s)
+void FLARESSolver::trial(State* s,  std::chrono::time_point<std::chrono::high_resolution_clock> start_time, bool &isTimedUp)
 {
     State* currentState = s;
     list<State*> visited;
@@ -56,7 +56,7 @@ void FLARESSolver::trial(State* s)
     while (!visited.empty()) {
         currentState = visited.front();
         visited.pop_front();
-        if (!checkSolved(currentState))
+        if (!checkSolved(currentState, start_time, isTimedUp))
             break;
     }
 }
@@ -79,7 +79,7 @@ double FLARESSolver::computeNewDepth(Successor& su, double depth)
 }
 
 
-bool FLARESSolver::checkSolved(State* s)
+bool FLARESSolver::checkSolved(State* s,  std::chrono::time_point<std::chrono::high_resolution_clock> start_time, bool& isTimedUp)
 {
     list< pair<State*,double > > open, closed;
 
@@ -95,6 +95,16 @@ bool FLARESSolver::checkSolved(State* s)
         open.pop_front();
         currentState = pp.first;
         double depth = pp.second;
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::
+            duration_cast<std::chrono::milliseconds>(end-start_time).count();
+        if (maxTime_ > -1 && duration >= maxTime_)
+		{
+			isTimedUp = true;
+			std::cout << "duration:" << duration << std::endl;
+			return false;
+		}
 
         if ( (useProbsForDepth_ && depth < 2 * log(horizon_)) ||
              (!useProbsForDepth_ && depth > 2 * horizon_) ) {
@@ -178,17 +188,12 @@ Action* FLARESSolver::solveApproximate(State* s0)
 {
     int trials = 0;
     auto begin = std::chrono::high_resolution_clock::now();
+	bool isTimedUp = false;
     while (!labeledSolved(s0) && trials++ < maxTrials_) {
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::
-            duration_cast<std::chrono::milliseconds>(end-begin).count();
-        if (maxTime_ > -1 && duration >= maxTime_)
-		{
-			std::cout << "duration:" << duration << std::endl;
-            break;
-		}
-        trial(s0);
-    }
+		trial(s0, begin, isTimedUp);    
+		if(isTimedUp)
+			break;
+	}
     return s0->bestAction();
 }
 
@@ -196,10 +201,13 @@ Action* FLARESSolver::solveApproximate(State* s0)
 Action* FLARESSolver::solveOptimally(State* s0)
 {
     horizon_ = 0;
+    auto begin = std::chrono::high_resolution_clock::now();
+	bool isTimedUp = false;
     while (true) {
         int trials = 0;
         while (!labeledSolved(s0) && trials++ < maxTrials_) {
-            trial(s0);
+
+            trial(s0, begin, isTimedUp);
         }
         if (s0->checkBits(mdplib::SOLVED))
             break;
@@ -208,6 +216,8 @@ Action* FLARESSolver::solveOptimally(State* s0)
             tmp->clearBits(mdplib::SOLVED_FLARES);
         depthSolved_.clear();
     }
+
+end:
     return s0->bestAction();
 }
 

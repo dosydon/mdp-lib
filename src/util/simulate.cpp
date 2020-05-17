@@ -117,7 +117,12 @@ vector<double> simulate(Solver* solver,
         }
         double costTrial = 0.0;
         int plausTrial = 0;
-        while (!problem->goal(tmp)) {
+		int maxTimeStep = 1000;
+		int timeStep = 0;
+
+        while (!problem->goal(tmp) && timeStep < maxTimeStep) {
+			timeStep++;
+
             statesSeen.insert(tmp);
             Action* a;
             if (mustReplan(solver, algorithm, tmp, plausTrial)) {

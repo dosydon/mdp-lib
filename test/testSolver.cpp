@@ -376,8 +376,11 @@ int main(int argc, char* args[])
     if (flag_is_registered_with_value("dead-end-cost"))
         mdplib::dead_end_cost = stof(flag_value("dead-end-cost"));
     setupProblem();
-    if (!flag_is_registered("dont-generate"))
+    if (!flag_is_registered("dont-generate")) {
         problem->generateAll();
+	} else {
+		std::cerr << "don't generate" << std::endl;
+	}
     if (flag_is_registered_with_value("heuristic")) {
         if (flag_value("heuristic") == "hmin") {
             clock_t startTime = clock();

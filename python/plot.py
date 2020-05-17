@@ -10,7 +10,9 @@ if __name__ == '__main__':
         dict = json.loads(data)
         y = dict["execution_cost"]
         x = dict["max_time"]
+        err = dict["stds"]
         plt.ylabel("Execution Costs")
         plt.xlabel("Time per Re-Planning")
-        plt.plot(x, y)
+        plt.xscale('log')
+        plt.errorbar(x, y, err, fmt='-o')
         plt.savefig(sys.argv[2])

@@ -23,6 +23,14 @@ void LRTDPSolver::trial(mlcore::State* s, std::chrono::time_point<std::chrono::h
 
         if (tmp->deadEnd())
             break;
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto dur = std::chrono::
+            duration_cast<std::chrono::milliseconds>(end_time-start_time).count();
+        if (maxTime_ > -1 && dur >= maxTime_)
+		{
+			std::cout << "duration:" << dur << std::endl;
+			return;
+		}
 
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
         tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
