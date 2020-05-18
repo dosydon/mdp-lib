@@ -605,9 +605,8 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
             if (upperBounds_.count(su.su_state) == 0)
                 initializeUpperBound(su.su_state);
             upperBoundAction += su.su_prob * upperBounds_[su.su_state];
-                                                                                std::cout << "~" << su.su_state << "~" << (upperBounds_[su.su_state] - su.su_state->cost());
+//                                                                                 std::cout << "~" << su.su_state << "~" << (upperBounds_[su.su_state] - su.su_state->cost());
         }
-                                                                                std::cout << ";";
         lowerBoundAction =
             (lowerBoundAction * problem_->gamma()) + problem_->cost(s, a);
         lowerBoundAction = std::min(mdplib::dead_end_cost, lowerBoundAction);
@@ -623,7 +622,6 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
             bestActionLowerBound = a;
         }
     }
-                                                                                std::cout << std::endl;
     if (!hasAction && bestLowerBound >= mdplib::dead_end_cost)
         s->markDeadEnd();
     double boundGap = bestUpperBound - bestLowerBound;

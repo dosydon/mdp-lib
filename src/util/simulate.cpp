@@ -162,8 +162,11 @@ vector<double> simulate(Solver* solver,
             if (verbosity >= 1000) {
                 cout << "State/Action: " << tmp << " " << a << " " << endl;
             }
+// 			std::cout << tmp << std::endl;
+// 			std::cout << a << std::endl;
 
             costTrial += problem->cost(tmp, a);
+// 			std::cout << costTrial << std::endl;
             costTrial = std::min(costTrial, mdplib::dead_end_cost);
             if (costTrial >= mdplib::dead_end_cost) {
                 break;
