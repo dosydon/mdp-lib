@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     dirname = sys.argv[1]
-    methods = ["lrtdp", "flares0", "flares1", "flares"]
+    methods = ["lrtdp", "flares0", "flares1", "flares", "brtdp", "brtdp-lb"]
     plt.xscale('log')
     plt.ylabel("Execution Costs")
     plt.xlabel("Time per Re-Planning")

@@ -7,12 +7,14 @@ SCRIPT_DIR := python
 VENV_DIR := venv
 NSIMS := 100
 MAX_TIME := 10000
-TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/roads-extreme.track
+# TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/roads-extreme.track
+TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track
 # TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/known/square-4-error.track tracks/roads-extreme.track tracks/winding.track tracks/city.track tracks/roads.track tracks/multigoal.track tracks/big-error.track tracks/blocks.track
-CTPS := ctps/small-graphs/test00_5.graph ctps/small-graphs/test00_6.graph ctps/small-graphs/test00_10.graph
+# CTPS := ctps/small-graphs/test00_5.graph ctps/small-graphs/test00_6.graph
+CTPS :=
 
 # METHODS := flares0 flares1 lrtdp flares0_no_heuristic flares1_no_heuristic lrtdp_no_heuristic
-METHODS := lrtdp flares0 flares1 flares
+METHODS := lrtdp flares0 flares1 flares brtdp brtdp-lb
 MAX_TRIALS = 1 2 4 8 16 32 64 128 256 512
 
 pngs = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).png)) $(foreach ctp,$(CTPS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/$(method).png))
@@ -24,6 +26,12 @@ comparisons = $(foreach track,$(TRACKS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/co
 define for_problem_max_trial =
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp_$(4).log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=lrtdp --v=1 --pslip=0.2 --perror=0.1 --trials=$(4) > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp_$(4).log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=brtdp --v=1 --pslip=0.2 --perror=0.1 --trials=$(4) --online=true > $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp-lb_$(4).log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=brtdp-lb --v=1 --pslip=0.2 --perror=0.1 --trials=$(4) --online=true > $$@
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares_$(4).log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	./testsolver.out --$(2)=data/$(1) $(3) --n=$$(NSIMS) --algorithm=flares --v=1 --pslip=0.2 --perror=0.1 --trials=$(4) --prob=0 --optimal=true > $$@
@@ -48,7 +56,7 @@ $(foreach problem,$(CTPS),$(foreach maxtrial,$(MAX_TRIALS),$(eval $(call for_pro
 define for_problem =
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1):
 	mkdir -p $$@
-$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/compare.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares0.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares1.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.json $$(SCRIPT_DIR)/compare.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/compare.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp-lb.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares0.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares1.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.json $$(SCRIPT_DIR)/compare.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/compare.py $$(RESULT_DIR)/$$(GIT_VERSION)/$(1) $$@
 endef
 
@@ -71,7 +79,7 @@ $(foreach problem,$(CTPS),$(foreach method,$(METHODS),$(eval $(call for_problem_
 # Compilation flags and variables
 CC = g++
 CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
-TEST_FLAGS = -std=c++11 -O0 -DTEST -DATOM_STATES -DNDEBUG -pthread
+TEST_FLAGS = -std=c++11 -O0 -DTEST -DATOM_STATES -DNDEBUG -pthread -g
 # CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
@@ -309,6 +317,9 @@ lib/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 testsolver.out: lib/libmdp.a lib/libmdp_domains.a
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
 
+testsolver_debug.out: lib/libmdp.a lib/libmdp_domains.a
+	$(CC) $(TEST_FLAGS) $(INCLUDE) -o testsolver_debug.out $(TD)/testSolver.cpp $(LIBS)
+
 testvpi.out: lib/libmdp.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testvpi.out $(TD)/testVPISolver.cpp $(LIBS) \
 		src/solvers/VISolver.cpp
@@ -404,5 +415,6 @@ flush:
 
 .PHONY: run
 run: $(pngs) $(comparisons)
+	curl -X POST -H 'Content-type: application/json' --data '{"text":"Finished Experiment!"}' ${SLACK_WEB_HOOK}
 
 print-%  : ; @echo $* = $($*)
