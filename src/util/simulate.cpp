@@ -1,4 +1,5 @@
 #include <climits>
+#include <cstdio>
 
 #include "solvers/HDPSolver.h"
 #include "solvers/Solver.h"
@@ -85,12 +86,13 @@ vector<double> simulate(Solver* solver,
         if (verbosity >= 100)
             cout << " ********* Simulation Starts ********* " << endl;
         clock_t startTime, endTime;
+		for (State* s : problem->states())
+			s->reset();
+
         if (i == 0 && !noInitialPlan) {
 			if (verbosity >= 10) {
 				cout << "Start Planing" << i << endl;
 			}
-            for (State* s : problem->states())
-                s->reset();
             if (maxTime > 0) {
 				std::cout << "maxTime:" << maxTime << std::endl;
                 solver->maxPlanningTime(maxTime);
@@ -197,9 +199,7 @@ vector<double> simulate(Solver* solver,
         cout << "Std. Dev. " << sqrt(variance / (cnt - 1)) << " ";
         cout << "Total time " << totalTime / cnt << " " << endl;
         cout << "States seen " << statesSeen.size() << endl;
-        cout << "Avg. time per decision "
-             << totalTime / numDecisions << endl
-             << "Longest planning time " << longestTime << endl;
+		std::printf("Avg. time per decision %.5f",totalTime/numDecisions);
         cout << "Num. decisions " << numDecisions << endl;
     } else if (verbosity >= 0) {
         cout << problem->initialState()->cost() << " ";

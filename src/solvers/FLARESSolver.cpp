@@ -209,6 +209,9 @@ Action* FLARESSolver::solveOptimally(State* s0)
 
             trial(s0, begin, isTimedUp);
         }
+		if(trials >= maxTrials_) {
+			break;
+		}
         if (s0->checkBits(mdplib::SOLVED))
             break;
         horizon_ = 2 * horizon_ + 1;
@@ -217,7 +220,6 @@ Action* FLARESSolver::solveOptimally(State* s0)
         depthSolved_.clear();
     }
 
-end:
     return s0->bestAction();
 }
 

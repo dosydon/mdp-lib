@@ -14,5 +14,6 @@ if __name__ == '__main__':
         plt.ylabel("Execution Costs")
         plt.xlabel("Time per Re-Planning")
         plt.xscale('log')
-        plt.errorbar(x, y, err, fmt='-o')
+#         plt.errorbar(x, y, err, fmt='-o')
+        plt.plot(x, y)
         plt.savefig(sys.argv[2])

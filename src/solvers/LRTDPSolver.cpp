@@ -23,14 +23,6 @@ void LRTDPSolver::trial(mlcore::State* s, std::chrono::time_point<std::chrono::h
 
         if (tmp->deadEnd())
             break;
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto dur = std::chrono::
-            duration_cast<std::chrono::milliseconds>(end_time-start_time).count();
-        if (maxTime_ > -1 && dur >= maxTime_)
-		{
-			std::cout << "duration:" << dur << std::endl;
-			return;
-		}
 
                                                                                 auto begin = std::chrono::high_resolution_clock::now();
         tmp = randomSuccessor(problem_, tmp, tmp->bestAction());
@@ -67,15 +59,6 @@ bool LRTDPSolver::checkSolved(mlcore::State* s, std::chrono::time_point<std::chr
     while (!open.empty()) {
         tmp = open.front();
         open.pop_front();
-
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::
-            duration_cast<std::chrono::milliseconds>(end-start_time).count();
-        if (maxTime_ > -1 && duration >= maxTime_)
-		{
-			std::cout << "duration:" << duration << std::endl;
-			return false;
-		}
 
         if (problem_->goal(tmp))
             continue;
@@ -127,16 +110,9 @@ mlcore::Action* LRTDPSolver::solve(mlcore::State* s0)
     int trials = 0;
     auto begin = std::chrono::high_resolution_clock::now();
     while (!s0->checkBits(mdplib::SOLVED) && trials++ < maxTrials_) {
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::
-            duration_cast<std::chrono::milliseconds>(end-begin).count();
-        if (maxTime_ > -1 && duration >= maxTime_)
-		{
-			std::cout << "duration:" << duration << std::endl;
-            break;
-		}
         trial(s0, begin);
     }
+// 	std::cout << trials << std::endl;
                                                                                 dprint(cnt_samples_, double(total_time_samples_) / cnt_samples_);
                                                                                 dprint(cnt_check_, double(total_time_check_) / cnt_check_);
                                                                                 dprint(trials);
