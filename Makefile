@@ -78,8 +78,8 @@ $(foreach problem,$(CTPS),$(foreach method,$(METHODS),$(eval $(call for_problem_
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
-TEST_FLAGS = -std=c++11 -O0 -DTEST -DATOM_STATES -DNDEBUG -pthread -g
+# CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
+CFLAGS = -std=c++11 -O0 -DATOM_STATES -DNDEBUG -pthread -g
 # CFLAGS = -std=c++11 -g -DATOM_STATES -pthread
 
 # Variables for directories
@@ -316,9 +316,6 @@ lib/libmdp_domains.a: lib/libmdp.a $(DOM_H) $(DOM_CPP)
 
 testsolver.out: lib/libmdp.a lib/libmdp_domains.a
 	$(CC) $(CFLAGS) $(INCLUDE) -o testsolver.out $(TD)/testSolver.cpp $(LIBS)
-
-testsolver_debug.out: lib/libmdp.a lib/libmdp_domains.a
-	$(CC) $(TEST_FLAGS) $(INCLUDE) -o testsolver_debug.out $(TD)/testSolver.cpp $(LIBS)
 
 testvpi.out: lib/libmdp.a domains
 	$(CC) $(CFLAGS) $(INCLUDE) -o testvpi.out $(TD)/testVPISolver.cpp $(LIBS) \

@@ -617,7 +617,7 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
             bestUpperBound = upperBoundAction;
             bestActionUpperBound = a;
         }
-        if (lowerBoundAction <= bestLowerBound) {
+        if (lowerBoundAction <= (bestLowerBound+1e-6)) {
             bestLowerBound = lowerBoundAction;
             bestActionLowerBound = a;
         }
