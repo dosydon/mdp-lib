@@ -16,6 +16,7 @@ public:
      * Returns an estimate of reaching a goal state from the given state.
      */
     virtual double cost(const State* s)=0;
+    virtual ~Heuristic() {}
 };
 
 }
