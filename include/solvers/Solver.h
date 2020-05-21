@@ -45,6 +45,7 @@ extern std::uniform_real_distribution<> kUnif_0_1;
 class Solver
 {
 public:
+	virtual ~Solver() {}
 
     /**
      * Solves the associated problem using this solver.
