@@ -6,24 +6,24 @@ RESULT_DIR := result
 SCRIPT_DIR := python
 VENV_DIR := venv
 SBATCH := sbatch
-NSIMS := 100
+NSIMS := 1000
 MAX_TIME := 10000
 # TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/roads-extreme.track
-TRACKS := tracks/known/ring-3-error.track
-# TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/known/square-4-error.track tracks/roads-extreme.track tracks/winding.track tracks/city.track tracks/roads.track tracks/multigoal.track tracks/big-error.track tracks/blocks.track
+# TRACKS := tracks/known/ring-3-error.track
+TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/known/square-4-error.track tracks/roads-extreme.track tracks/winding.track tracks/city.track tracks/roads.track tracks/multigoal.track tracks/big-error.track tracks/blocks.track
 # CTPS := ctps/small-graphs/test00_5.graph ctps/small-graphs/test00_6.graph
 CTPS :=
 
 # METHODS := flares0 flares1 lrtdp flares0_no_heuristic flares1_no_heuristic lrtdp_no_heuristic
 # METHODS := lrtdp flares0 flares1 flares brtdp brtdp-lb
-METHODS := lrtdp flares flares0 flares1 brtdp
+METHODS := lrtdp flares flares0 flares1 brtdp brtdp-lb
 MAX_TRIALS = 1 2 4 8 16 32 64 128 256 512
 
 pngs = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).png)) $(foreach ctp,$(CTPS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/$(method).png))
 # jsons = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).json)) $(foreach ctp,$(CTPS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/$(method).json)) 
 jsons = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(foreach maxtrial,$(MAX_TRIALS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method)_$(maxtrial).json))) $(foreach ctp,$(CTPS),$(foreach method,$(METHODS),$(foreach maxtrial,$(MAX_TRIALS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/$(method)_$(maxtrial).json)))
 
-comparisons = $(foreach track,$(TRACKS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/compare.png) $(foreach ctp,$(CTPS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/compare.png)
+comparisons = $(foreach track,$(TRACKS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(notdir $(track)).png)
 
 define for_problem_max_trial_method =
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(5)_$(4).log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
@@ -40,8 +40,9 @@ $(foreach problem,$(TRACKS),$(foreach maxtrial,$(MAX_TRIALS),$(foreach method,$(
 define for_problem =
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1):
 	mkdir -p $$@
-$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/compare.png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp-lb.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares0.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares1.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.json $$(SCRIPT_DIR)/compare.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/compare.py $$(RESULT_DIR)/$$(GIT_VERSION)/$(1) $$@
+
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$$(notdir $(1)).png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp-lb.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/brtdp.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares0.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/flares1.json $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/lrtdp.json $$(SCRIPT_DIR)/compare.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+	$$(SBATCH) --export=All,Input=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1),Output=$$@ --output=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/comapare.o --output=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/compare.e --job-name=$(1) slurm/compare.sh
 endef
 
 $(foreach problem,$(TRACKS),$(eval $(call for_problem,$(problem))))
@@ -51,7 +52,7 @@ define for_problem_method =
 method_jsons_$(1)_$(2) = $$(foreach maxtrial,$$(MAX_TRIALS),$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2)_$$(maxtrial).json)
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).json: $$(method_jsons_$(1)_$(2)) | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	$$(SBATCH) --export=ALl,Raw="$$(method_jsons_$(1)_$(2))" --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/merge_$(2).e --job-name=$(1) slurm/merge.sh
+	$$(SBATCH) --export=All,Raw="$$(method_jsons_$(1)_$(2))" --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/merge_$(2).e --job-name=$(1) slurm/merge.sh
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).json $$(SCRIPT_DIR)/plot.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	$$(SBATCH) --export=ALl,Input=$$<,Output=$$@ --output=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/plot_$(2) --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/plot_$(2).e --job-name=$(1) slurm/plot.sh
@@ -62,7 +63,8 @@ $(foreach problem,$(CTPS),$(foreach method,$(METHODS),$(eval $(call for_problem_
 
 # Compilation flags and variables
 CC = g++
-CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread
+# CC = clang++
+CFLAGS = -std=c++11 -O3 -DATOM_STATES -pthread -Wall
 # CFLAGS = -std=c++11 -O0 -DATOM_STATES -DNDEBUG -pthread -g -fsanitize=address
 # CFLAGS = -std=c++11 -O0 -g -DATOM_STATES -DNDEBUG -pthread
 
@@ -398,7 +400,7 @@ flush:
 run_jsons: $(jsons)
 
 .PHONY: run
-run: $(pngs)
+run: $(pngs) $(comparisons)
 # 	curl -X POST -H 'Content-type: application/json' --data '{"text":"Finished Experiment!"}' ${SLACK_WEB_HOOK}
 
 print-%  : ; @echo $* = $($*)

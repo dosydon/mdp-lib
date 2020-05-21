@@ -636,13 +636,15 @@ double VPIRTDPSolver::bellmanUpdate(mlcore::State* s) {
 }
 
 mlcore::Action* VPIRTDPSolver::solve(mlcore::State* s0) {
-    int trials = 0;
-    while (trials++ < maxTrials_) {
+// 	std::cout << maxTrials_ << std::endl;
+	for (int trials =0; trials < maxTrials_; trials++) {
+// 		std::cout << trials << "vs" << maxTrials_ << std::endl;
         trial(s0);
                                                                                 dprint("******", s0->cost(), upperBounds_[s0], "******");
         if (upperBounds_[s0] - s0->cost() < epsilon_)
             break;
     }
+    return s0->bestAction();
 }
 
 }

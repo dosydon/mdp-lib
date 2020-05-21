@@ -88,6 +88,7 @@ vector<double> simulate(Solver* solver,
         clock_t startTime, endTime;
 		for (State* s : problem->states())
 			s->reset();
+		solver->reset();
 
         if (i == 0 && !noInitialPlan) {
 			if (verbosity >= 10) {

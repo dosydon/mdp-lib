@@ -47,6 +47,8 @@ class Solver
 public:
 	virtual ~Solver() {}
 
+	virtual void reset() {}
+
     /**
      * Solves the associated problem using this solver.
      *

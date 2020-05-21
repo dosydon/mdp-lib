@@ -3,7 +3,7 @@
 #SBATCH --partition=defq    # Partition to submit to 
 #
 #SBATCH --ntasks=1
-#SBATCH --time=05:00         # Maximum runtime in D-HH:MM
+#SBATCH --time=60:00         # Maximum runtime in D-HH:MM
 #SBATCH --mem-per-cpu=1000    # Memory in MB per cpu allocated
 
-./testsolver.out --$Domain=$Instance --n=$N --algorithm=brtdp --v=100 --pslip=0.2 --perror=0.1 --trials=$NTrials --online=true $Additional
+./testsolver.out --$Domain=$Instance --n=$N --algorithm=brtdp --v=1 --pslip=0.2 --perror=0.1 --trials=$NTrials --online=true $Additional

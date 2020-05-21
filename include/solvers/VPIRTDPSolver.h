@@ -134,7 +134,7 @@ public:
                       bool vanillaSample = false);
 
     /** Resets all information stored by the algorithm. */
-    void reset() {
+    virtual void reset() {
         upperBounds_.clear();
         maxDeltaUpperBounds_.clear();
         minDeltaUpperBounds_.clear();
