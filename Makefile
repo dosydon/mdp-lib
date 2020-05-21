@@ -78,8 +78,8 @@ $(foreach problem,$(CTPS),$(foreach method,$(METHODS),$(eval $(call for_problem_
 
 # Compilation flags and variables
 CC = g++
-# CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
-CFLAGS = -std=c++11 -O0 -DATOM_STATES -DNDEBUG -pthread -g -fsanitize=leak
+CFLAGS = -std=c++11 -O3 -DATOM_STATES -DNDEBUG -pthread
+# CFLAGS = -std=c++11 -O0 -DATOM_STATES -DNDEBUG -pthread -g -fsanitize=address
 # CFLAGS = -std=c++11 -O0 -g -DATOM_STATES -DNDEBUG -pthread
 
 # Variables for directories
