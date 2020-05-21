@@ -9,8 +9,9 @@ SBATCH := sbatch
 NSIMS := 1000
 MAX_TIME := 10000
 # TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/roads-extreme.track
-# TRACKS := tracks/known/ring-3-error.track
-TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/known/square-4-error.track tracks/roads-extreme.track tracks/winding.track tracks/city.track tracks/roads.track tracks/multigoal.track tracks/big-error.track tracks/blocks.track
+# TRACKS := tracks/known/ring-5-error.track
+TRACKS := tracks/known/ring-3-error.track tracks/known/ring-4-error.track tracks/known/ring-5-error.track tracks/known/square-3-error.track tracks/known/square-4-error.track tracks/known/square-5-error.track tracks/known/square-5.track tracks/known/square-5-potholes.track tracks/roads-extreme.track tracks/roads-evenharder.track tracks/winding.track tracks/city.track tracks/roads.track tracks/multigoal.track tracks/big-error.track tracks/blocks.track tracks/known/barto-big-error.track tracks/known/hansen-bigger.track tracks/narrow.track tracks/map0.track tracks/map1.track tracks/map2.track tracks/map3.track
+
 # CTPS := ctps/small-graphs/test00_5.graph ctps/small-graphs/test00_6.graph
 CTPS :=
 
@@ -51,7 +52,7 @@ $(foreach problem,$(CTPS),$(eval $(call for_problem,$(problem))))
 define for_problem_method =
 method_jsons_$(1)_$(2) = $$(foreach maxtrial,$$(MAX_TRIALS),$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2)_$$(maxtrial).json)
 
-$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).json: $$(method_jsons_$(1)_$(2)) | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
+$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).json: $$(method_jsons_$(1)_$(2)) $$(SCRIPT_DIR)/merge.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
 	$$(SBATCH) --export=All,Raw="$$(method_jsons_$(1)_$(2))" --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/merge_$(2).e --job-name=$(1) slurm/merge.sh
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).json $$(SCRIPT_DIR)/plot.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)

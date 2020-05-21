@@ -28,8 +28,11 @@ if __name__ == '__main__':
     for filename in sys.argv[1:]:
         with open(filename) as f:
             data = f.read()
-            dict = json.loads(data)
-            merged["execution_cost"].append(dict["execution_cost"])
-            merged["stds"].append(dict["stds"])
-            merged["max_time"].append(dict["time_per_decision"])
+            try:
+                dict = json.loads(data)
+                merged["execution_cost"].append(dict["execution_cost"])
+                merged["stds"].append(dict["stds"])
+                merged["max_time"].append(dict["time_per_decision"])
+            except ValueError:
+                pass
     print(json.dumps(merged))
