@@ -16,7 +16,7 @@ CTPS :=
 
 # METHODS := flares0 flares1 lrtdp flares0_no_heuristic flares1_no_heuristic lrtdp_no_heuristic
 # METHODS := lrtdp flares0 flares1 flares brtdp brtdp-lb
-METHODS := lrtdp brtdp
+METHODS := lrtdp flares flares0 flares1 brtdp
 MAX_TRIALS = 1 2 4 8 16 32 64 128 256 512
 
 pngs = $(foreach track,$(TRACKS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/$(method).png)) $(foreach ctp,$(CTPS),$(foreach method,$(METHODS),$(RESULT_DIR)/$(GIT_VERSION)/$(ctp)/$(method).png))
@@ -27,10 +27,10 @@ comparisons = $(foreach track,$(TRACKS),$(RESULT_DIR)/$(GIT_VERSION)/$(track)/co
 
 define for_problem_max_trial_method =
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(5)_$(4).log: testsolver.out | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	$$(SBATCH) --export=ALL,Domain=$(2),Instance=data/$(1),Algorithm=lrtdp,N=$$(NSIMS),NTrials=$(4) --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(5)_$(4).e --job-name=$(5)_$(4)_$(1) slurm/$(5).sh 
+	$$(SBATCH) --export=ALL,Domain=$(2),Instance=data/$(1),Algorithm=lrtdp,N=$$(NSIMS),NTrials=$(4) --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(5)_$(4).e --job-name=$(1) slurm/$(5).sh 
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.json: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/%.log $$(SCRIPT_DIR)/parse_one_log.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	$$(SBATCH) --export=All,Raw=$$< --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/parse_$$*.e --job-name=$$*_$(1) slurm/parse.sh
+	$$(SBATCH) --export=All,Raw=$$< --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/parse_$$*.e --job-name=$(1) slurm/parse.sh
 endef
 
 $(foreach problem,$(TRACKS),$(foreach maxtrial,$(MAX_TRIALS),$(foreach method,$(METHODS),$(eval $(call for_problem_max_trial_method,$(problem),track,,$(maxtrial),$(method))))))
@@ -51,10 +51,10 @@ define for_problem_method =
 method_jsons_$(1)_$(2) = $$(foreach maxtrial,$$(MAX_TRIALS),$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2)_$$(maxtrial).json)
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).json: $$(method_jsons_$(1)_$(2)) | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/merge.py $$(method_jsons_$(1)_$(2)) > $$@
+	$$(SBATCH) --export=ALl,Raw="$$(method_jsons_$(1)_$(2))" --output=$$@ --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/merge_$(2).e --job-name=$(1) slurm/merge.sh
 
 $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).png: $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/$(2).json $$(SCRIPT_DIR)/plot.py | $$(RESULT_DIR)/$$(GIT_VERSION)/$(1)
-	$$(VENV_DIR)/bin/python3 $$(SCRIPT_DIR)/plot.py $$< $$@
+	$$(SBATCH) --export=ALl,Input=$$<,Output=$$@ --output=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/plot_$(2) --error=$$(RESULT_DIR)/$$(GIT_VERSION)/$(1)/plot_$(2).e --job-name=$(1) slurm/plot.sh
 endef
 
 $(foreach problem,$(TRACKS),$(foreach method,$(METHODS),$(eval $(call for_problem_method,$(problem),$(method)))))
@@ -398,7 +398,7 @@ flush:
 run_jsons: $(jsons)
 
 .PHONY: run
-run: $(pngs) $(comparisons)
+run: $(pngs)
 # 	curl -X POST -H 'Content-type: application/json' --data '{"text":"Finished Experiment!"}' ${SLACK_WEB_HOOK}
 
 print-%  : ; @echo $* = $($*)

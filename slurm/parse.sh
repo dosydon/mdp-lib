@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH -d singleton
-#SBATCH --partition=longq    # Partition to submit to 
+#SBATCH --partition=defq    # Partition to submit to 
 #
 #SBATCH --ntasks=1
 #SBATCH --time=10:00         # Maximum runtime in D-HH:MM
