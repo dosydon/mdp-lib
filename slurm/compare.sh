@@ -9,4 +9,4 @@
 
 
 venv/bin/python3 python/compare.py $Input $Output
-curl -F file=@$Output -F "initial_comment=Hello, Leadville" -F channels=experiment -H "Authorization: Bearer $SLACK_TOKEN" https://slack.com/api/files.upload
+curl -F file=@$Output -F "initial_comment=Hello, Leadville" -F channels=experiment -H "Authorization: Bearer xoxp-105471113189-106058525350-1158040905200-28266487b20a724c0913e7bd9c75537a" https://slack.com/api/files.upload
