@@ -17,6 +17,9 @@ def parse(data):
 
     m = re.search("Avg\. time per decision (\d+\.*\d*)", data)
     dict["time_per_decision"] = float(m.group(1))
+
+    m = re.search("Total time (\d+\.*\d*)", data)
+    dict["total_time"] = float(m.group(1))
     return dict
 
 if __name__ == '__main__':

@@ -214,8 +214,6 @@ void initSolver(string algorithm, Solver*& solver)
     } else if (algorithm == "lao") {
         solver = new LAOStarSolver(problem, tol, 1000000);
     } else if (algorithm == "lrtdp") {
-		std::cout << trials << std::endl;
-		std::cout << tol << std::endl;
         solver = new LRTDPSolver(problem, trials, tol);
     } else if (algorithm == "brtdp") {
         // BRTDP is just VPI-RTDP with beta = 0
@@ -240,6 +238,15 @@ void initSolver(string algorithm, Solver*& solver)
                                    mdplib::dead_end_cost + 10.0,
                                    true);
         useUpperBound = true;
+	}
+	else if (algorithm == "rtdp") {
+        // RTDP with upper bound action selection
+        // is just VPI-RTDP with vanillaSample set to true
+        solver = new VPIRTDPSolver(problem, tol, trials,
+                                   0.0, 0.0, 0.0,
+                                   mdplib::dead_end_cost + 10.0,
+                                   true);
+        useUpperBound = false;
     } else if (algorithm == "vpi-rtdp") {
         double alpha = 1.0;
         double beta = 0.95 * mdplib::dead_end_cost;
